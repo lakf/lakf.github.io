@@ -1,0 +1,63 @@
+body {
+  background-color: Beige;
+}
+
+h1 {
+  color: black;
+  text-align: center;
+}
+
+p {
+  font-family: times new roman;
+  font-size: 20px;
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  display: inline;
+}
+
+li a {
+  display: inline;
+  color: black;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 20px;
+}
+
+li a:hover {
+  background-color: white;
+}
+
+body {
+  width:800px;/*change the value to suite ur need*/
+
+  border: 30px solid black;
+  padding: 90px;
+  margin: auto;
+  margin-color: white;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 20px;
+}
+
+a:hover {
+    background-color: white;
+    font-style: italic;
+}
+
+.section-right-bottom {
+    font-style: italic;
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+    font-size: 20px;
+}
