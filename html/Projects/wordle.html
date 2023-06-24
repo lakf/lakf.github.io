@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>World Cup Wordle</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="/index.html">Michael Clark</a></li>
+                <li><a href="/html/projects.html">Projects</a></li>
+                <li><a href="/html/music.html">Music</a></li>
+                <li><a href="/html/musings.html">Musings</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+<h1>World Cup Wordle</h1>
+<p>World Cup Wordle was an independent project completed in late 2022.</p>
+<div style="display: flex; justify-content: center;">
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/9pa-Qk4hlkQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+</div>
+<!-- Description -->
+<h2>Description</h2>
+<p>The idea for this project was to create a copy of the popular Wordle game, however instead of guessing the letters of words the user would now be guessing the letters of the last names of footballers playing in the world cup 2022. In a "guess-who" manner, if the user guessed a player with a same attribute as the mystery player, this attribute would be revealed. For example, if a user guessed Rice (Declan Rice), but the mystery player was Kane (Harry Kane), then they would be shown the attributes that they share (English nationality, playing in English leagues).
+</p>
+<p>This project was a great introduction in getting hands on with running a full stack architecture. I used a simple html, js & css frontend. The backend was made using python flask, and the database was a postgresql database. This database contained the one table which contained all of the players and their various attributes.</p>
+<p>I deployed this project using Heroku to host the backend and database, with Vercel hosting the frontend.</p>
+</body>
+</html>
