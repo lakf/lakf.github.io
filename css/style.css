@@ -1,5 +1,5 @@
 body {
-  background-color: Beige;
+  background-color: whitesmoke;
 }
 
 h1 {
@@ -37,7 +37,7 @@ li a:hover {
 body {
   width:800px;/*change the value to suite ur need*/
 
-  border: 30px solid black;
+  
   padding: 90px;
   margin: auto;
   margin-color: white;
