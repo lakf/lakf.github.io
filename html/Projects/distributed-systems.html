@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Distributed Systems Components</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="/index.html">Michael Clark</a></li>
+                <li><a href="/html/projects.html">Projects</a></li>
+                <li><a href="/html/music.html">Music</a></li>
+                <li><a href="/html/musings.html">Musings</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+<h1>Distributed Systems Components</h1>
+
+<h2>Introduction</h2>
+<p>This project intended to explore distributed systems. It covers:</p>
+<div style="display: block;">
+    <ol style="list-style-type: decimal;">
+        <li>What is a distributed system?</li>
+        <li>The technologies used in this project</li>
+        <li>Distributing the distributed systems project</li>
+        <li>Set-up and configuration</li>
+        <li>Code example</li>
+        <li>Conclusion</li>
+    </ol>
+</div>
+
+<h2>What is a distributed system?</h2>
+<p>A distributed system is any environment where multiple computers or devices are working on a variety of tasks and components, all spread across a network. Components within distributed systems split up the work, coordinating efforts to complete a given job more efficiently than if only a single device ran it.</p>
+
+<h2>Technologies used in this project</h2>
+<img src="/images/distributed_systems_architecture.jpeg" width=70%>
+<p>The technologies I am referring to, and how they were used in this project are as follows:</p>
+<ol>
+    <li>
+        <strong>Flask:</strong> A lightweight Python web framework. In this project, Flask was used as a development server. I utilized Flask to define the routes in the application, ensuring incoming requests are directed to the appropriate handlers. Flask allowed me to create a RESTful API structure, facilitating communication between the client and the server.
+    </li>
+    <br>
+    <li>
+        <strong>RabbitMQ:</strong> A “message broker” that enables communication between distributed systems. RabbitMQ was integrated into the project to facilitate asynchronous communication between different components of the system. By leveraging RabbitMQ’s messaging queues, I was able to decouple various parts of the application, ensuring robustness and scalability. Tasks could be processed asynchronously, enhancing the overall efficiency and responsiveness of the system.
+    </li>
+    <br>
+    <li>
+        <strong>Celery:</strong> A distributed task queueing system that enables the execution of tasks asynchronously. Celery was integrated with Flask and RabbitMQ to handle background tasks effectively. I defined Celery tasks to encapsulate functionalities. These tasks were then enqueued to RabbitMQ and processed by Celery workers in a distributed manner, allowing the application to perform resource-intensive operations without blocking the main execution flow. Celery’s scalability and fault tolerance capabilities were crucial in ensuring the reliability and performance of the system.
+    </li>
+    <br>
+    <li>
+        <strong>Redis:</strong> An in-memory data structure store that can serve as a cache and message broker. Redis was employed as the result backend for Celery. By using Redis as the result backend, I was able to store task results efficiently, enabling easy retrieval and monitoring of task execution status.
+    </li>
+    <br>
+</ol>
+
+<h2>Distributing the Distributed Systems Project</h2>
+<p>In this project, I ran everything from my computer and did not deploy it using multiple computers (nodes). However, the key takeaway is that each of these components (Flask, RabbitMQ, Celery, Redis) was running in their own standalone terminal. During, although running different components in separate terminals, they’re all running on the same computer which means it is still considered a single-node system (because all the components are running on the same physical or virtual machine).</p>
+<p>To make the system distributed, we would need to run each of these components on multiple servers, connected via a network. Then whilst setting up the configuration (next section), the URLs of the broker (RabbitMQ), backend (Redis), web framework (Flask), and queueing system (Celery) would be adapted to the URL of the segregated node they are working on. </p>
+
+<h2>Set-Up</h2>
+<p>The key is in the celery_config.py. Here we must ensure that we’re explicitly setting RabbitMQ as the message broker and Redis as the result backend for Celery:</p>
+<pre><code>
+    celery = Celery(__name__, broker='pyamqp://guest@localhost//', backend='redis://localhost:6379/0')</code></pre>
+<p>With RabbitMQ configured as the message broker, Celery will use it to handle the communication between the Flask application and the Celery workers.</p>
+<p>When a task is enqueued in Flask, Celery will enqueue (add to a queue) the task in RabbitMQ’s queue, and Celery workers will consume these tasks from RabbitMQ for processing. Once a task is completed, the result will be stored in Redis as the result backend.</p>
+
+<h2>Example</h2>
+<pre><code>
+    @app.route('/enqueue-example-task', methods=['POST'])
+    def enqueue_example_task():
+        result = example_task.delay()
+        return jsonify({'message': 'Example task enqueued successfully', 'task_id': result.id}), 201
+    </code></pre>
+    <p>When a request hits the ‘/enqueue-example-task’ route in the Flask application, Flask enqueues a task using Celery’s ‘example_task<strong>.delay()’</strong> method. This method call is responsible for enqueuing the task into Celery’s task queue.</p>
+    <p>Celery (which is configured with RabbitMQ as the message broker), receives the enqueued task from the Flask application. When the task is enqueued, Celery serializes the task and sends it to RabbitMQ for queuing RabbitMQ.</p>
+    <p>Celery workers continuously monitor the task queue for new tasks. When a task is available, a Celery worker retrieves it from the queue.</p>
+    <pre><code>
+        @celery.task
+        def example_task():
+           return 'This is an example Celery task'
+        </code></pre>
+    
+    <p>The Celery worker then executes the task according to its defined function. In this example there is no real functionality, just a return stating “This is an example Celery task”.</p>
+    <p>Celery workers work side by side, asynchronously. This allows the Flask application to continue handling incoming requests without waiting for the tasks to complete which is important for responsiveness and scalability.</p>
+    <p>Once the task is completed by the Celery worker, the result is stored in the configured result backend. In this case, redis is configured as the result backend. </p>
+
+    <pre><code>
+        redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
+
+        @app.route('/get-result/<task_id>', methods=['GET'])
+        def get_result(task_id):
+            # Retrieve task result from Redis
+            result = redis_client.get(task_id)
+    
+            if result is None:
+                return jsonify({'message': 'Task result not found'}), 404
+    
+            return jsonify({'message': 'Task result retrieved successfully', 'result': result.decode()}), 200
+    </code></pre>
+
+    <p>The result backend allows for easy retrieval of task results by the Flask application or any other consumer that needs access to the task outcomes.</p>
+
+    <h2>Conclusion</h2>
+    <p>In conclusion, this project has explored distributed systems architecture and the integration of various technologies such as Flask, RabbitMQ, Celery, and Redis. By leveraging asynchronous task processing and message queuing, we were able to achieve improved scalability, responsiveness, and fault tolerance in our application. Moving forward, the experience gained from this project should serve as a solid foundation for building robust and efficient distributed systems in the future.</p>
+</body>
+</html>
